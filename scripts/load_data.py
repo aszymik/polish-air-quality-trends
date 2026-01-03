@@ -32,7 +32,7 @@ def download_gios_archive(year, gios_id, filename):
 
 def download_metadata():
     """Pobiera metadane o stacjach"""
-    url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/584"
+    url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/622"
     response = requests.get(url)
     response.raise_for_status()
     df = pd.read_excel(io.BytesIO(response.content), header=0)
