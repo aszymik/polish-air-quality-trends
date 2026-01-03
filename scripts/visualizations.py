@@ -1,0 +1,88 @@
+from matplotlib import pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+def plot_trends_for_chosen_cities(df: pd.DataFrame, chosen_years: list, chosen_cities: list):
+    """Rysuje wykres trendów średnich miesięcznych PM2.5 dla wybranych dwóch miast."""
+
+    assert len(chosen_cities) == 2, "Funkcja obsługuje dokładnie dwa miasta."
+    assert len(chosen_years) == 2, "Funkcja obsługuje dokładnie dwa lata."
+
+    plt.figure(figsize=(12, 6))
+
+    # Wizualne rozdzielenie na trendy danych
+    sns.set_style("whitegrid")
+
+    sns.lineplot(
+        data=df,
+        x='Miesiąc',
+        y='PM2.5',
+        hue='Miasto',
+        style='Rok',
+        markers=True,
+        dashes=True,
+        palette={chosen_cities[0]: 'navy', chosen_cities[1]: 'darkred'},
+        linewidth=2.5
+    )
+
+    plt.title(f'Trend średnich miesięcznych stężeń PM2.5: {chosen_cities[0]} vs {chosen_cities[1]} ({chosen_years[0]} vs {chosen_years[1]})', fontsize=16)
+    plt.xlabel('Miesiąc', fontsize=12)
+    plt.ylabel('Średnie stężenie PM2.5 [µg/m³]', fontsize=12)
+    plt.xticks(range(1, 13))  
+    plt.axhline(y=15, color='gray', linestyle='--', alpha=0.7, label='Norma dobowa WHO (15 µg/m³)')
+
+    plt.legend(title='Miasto / Rok')
+    plt.tight_layout()
+    plt.show()
+
+def plot_heatmaps_for_cities(df_means: pd.DataFrame):
+    """Rysuje heatmapy miesięcznych średnich PM2.5 dla miast."""
+
+    cities = [col for col in df_means.columns if col not in ['Data', 'Rok', 'Miesiąc']]
+
+    n = len(cities)
+    _, axes = plt.subplots(n//2, 2, figsize=(14, 2*n))
+    axes = axes.flatten()
+
+    for ax, city in zip(axes, cities):
+        df_city = df_means[['Rok','Miesiąc', city]]
+
+        # Tabela, w ktorej wiersze to lata, a kolumny miesiące
+        pivot = df_city.pivot_table(
+            index='Rok', 
+            columns='Miesiąc', 
+            values=city,
+            aggfunc='mean'
+        )
+
+        sns.heatmap(pivot, annot=True, fmt=".1f", ax=ax, vmin=5, vmax=75)
+        ax.set_title(f"Średnie miesięczne PM2.5 [µg/m³] – {city}")
+        ax.set_ylabel("Rok")
+        ax.set_xlabel("Miesiąc")
+        ax.set_xticklabels(pivot.columns)
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_who_exceeding_days(selected_stations: pd.DataFrame):
+    """Rysuje wykres słupkowy liczby dni przekroczeń normy WHO dla wybranych stacji."""
+    plot_df = selected_stations[[2014, 2019, 2024]]
+
+    plot_df.plot(
+        kind='bar',
+        figsize=(12, 7),
+        width=0.4,          
+        edgecolor='black',
+        rot=0
+    )
+
+    plt.title('Liczba dni z przekroczeniem normy WHO (15 µg/m³) w roku\n(3 najlepsze i 3 najgorsze stacje w 2024)', fontsize=14)
+    plt.xlabel('Stacja')
+    plt.ylabel('Liczba dni z przekroczeniem')
+
+    plt.axhline(y=365, color='red', linestyle=':', label='Pełny rok')
+    plt.legend(title='Rok')
+
+    plt.tight_layout()
+    plt.show()
+    
