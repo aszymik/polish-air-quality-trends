@@ -12,27 +12,31 @@ def get_chosen_monthly_means(df: pd.DataFrame, chosen_years: list, chosen_cities
     # Filtrowanie wierszy: czy są z wybranych lat
     df_trend = df[df['Rok'].isin(chosen_years)].copy()
     results = []
-
+    data_cols = [('Rok', ''), ('Miesiąc', '')]
+    city_cols = [col for col in df_trend.columns if col[0] in chosen_cities]
+    df_selected = df_trend[data_cols + city_cols]
     # Iterujemy po miastach, korzsystając z kolumn należnych do danych miast
-    for city in chosen_cities:
-        city_col = df_trend.xs(city, level='Miejscowość', axis=1)
+    # for city in chosen_cities:
+    #     city_col = df_trend.xs(city, level='Miejscowość', axis=1)
         
-        years = df_trend[('Rok', '')]
-        months = df_trend[('Miesiąc', '')]
-        
-        city_mean = city_col.mean(axis=1)
-        for_now_df = pd.DataFrame({
-            'Rok': years,
-            'Miesiąc': months,
-            'PM2.5': city_mean,
-            'Miasto': city
-        })
-        # Średnie miesięczne
-        monthly = for_now_df.groupby(['Rok', 'Miesiąc', 'Miasto'])['PM2.5'].mean().reset_index()
-        results.append(monthly)
+    #     years = df_trend[('Rok', '')]
+    #     months = df_trend[('Miesiąc', '')]
+    df_long = df_selected.melt(id_vars=data_cols, value_vars=city_cols, var_name=['Miasto', 'Stacja'], value_name='PM2.5')
+    df_monthly = (df_long.groupby([('Rok', ''), ('Miesiąc', ''), 'Miasto'], as_index=False)['PM2.5'].mean())    
+    #     city_mean = city_col.mean(axis=1)
+    #     for_now_df = pd.DataFrame({
+    #         'Rok': years,
+    #         'Miesiąc': months,
+    #         'PM2.5': city_mean,
+    #         'Miasto': city
+    #     })
+    #     # Średnie miesięczne
+    #     monthly = for_now_df.groupby(['Rok', 'Miesiąc', 'Miasto'])['PM2.5'].mean().reset_index()
+    #     results.append(monthly)
 
-    final_df = pd.concat(results)
-    return final_df
+    # final_df = pd.concat(results)
+    df_monthly.columns = ['Rok', 'Miesiąc', 'Miasto', 'PM2.5']
+    return df_monthly
 
 def get_monthly_means_for_cities(df: pd.DataFrame) -> pd.DataFrame:
     """Oblicza miesięczne średnie PM2.5 uśrednione dla wszystkich stacji miasta."""
