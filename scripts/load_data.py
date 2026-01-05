@@ -6,8 +6,8 @@ from typing import Tuple
 
 # id archiwum dla poszczególnych lat
 gios_archive_url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/"
-gios_url_ids = {2014: '302', 2019: '322', 2024: '582'}
-gios_pm25_file = {2014: '2014_PM2.5_1g.xlsx', 2019: '2019_PM25_1g.xlsx', 2024: '2024_PM25_1g.xlsx'}
+gios_url_ids = {2015: '236', 2018: '603', 2021: '486', 2024: '582'}
+gios_pm25_file = {2015: '2015_PM25_1g.xlsx', 2018: '2018_PM25_1g.xlsx', 2021: '2021_PM25_1g.xlsx', 2024: '2024_PM25_1g.xlsx'}
 
 def download_gios_archive(year, gios_id, filename):
     """Pobiera podane archiwum"""
@@ -137,8 +137,20 @@ def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code:
 
 def join_data_on_common_stations(dfs: list) -> tuple[pd.DataFrame, list]:
     """Zwraca listę DataFrame'ów z danymi tylko dla wspólnych stacji."""
-    result = pd.concat(dfs, join='inner', ignore_index=True)
-    cols_to_keep = ('Data', '') , ('Rok', ''), ('Miesiąc', '')
+    cols_to_keep = [('Data', '') , ('Rok', ''), ('Miesiąc', '')]
+    all_stations = set()
+    for df in dfs:
+        all_stations.update(df.columns.difference(cols_to_keep))
+    all_stations = list(all_stations)
+    all_dfs = []
+    for df in dfs:
+        for col in all_stations:
+            if col not in df.columns:
+                df[col] = pd.NA
+        df = df[cols_to_keep + all_stations]
+        all_dfs.append(df)
+    result = pd.concat(dfs, ignore_index=True)
+
     common_stations = [col for col in result.columns if col not in cols_to_keep]
     return result, common_stations
 
