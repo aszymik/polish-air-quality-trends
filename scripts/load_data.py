@@ -135,7 +135,7 @@ def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code:
 
 
 
-def join_data_on_common_stations(dfs: list) -> tuple(pd.DataFrame, list):
+def join_data_on_common_stations(dfs: list) -> tuple[pd.DataFrame, list]:
     """Zwraca listę DataFrame'ów z danymi tylko dla wspólnych stacji."""
     result = pd.concat(dfs, join='inner', ignore_index=True)
     cols_to_keep = ('Data', '') , ('Rok', ''), ('Miesiąc', '')
