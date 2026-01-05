@@ -66,7 +66,7 @@ def plot_heatmaps_for_cities(df_means: pd.DataFrame):
 
 def plot_who_exceeding_days(selected_stations: pd.DataFrame):
     """Rysuje wykres słupkowy liczby dni przekroczeń normy WHO dla wybranych stacji."""
-    plot_df = selected_stations[[2014, 2019, 2024]]
+    plot_df = selected_stations[[2015, 2018, 2021, 2024]]
 
     plot_df.plot(
         kind='bar',
