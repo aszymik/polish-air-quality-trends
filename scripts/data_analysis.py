@@ -4,6 +4,8 @@ def get_monthly_means_for_stations(df: pd.DataFrame) -> pd.DataFrame:
     """Oblicza miesięczne średnie wartości PM2.5 dla każdej stacji."""
     # Usuwamy datę, zostawiamy liczby
     df_number = df.drop(columns=[('Data', '')])
+    for col in df_number:
+        df_number[col] = pd.to_numeric(df_number[col], errors='coerce')
     monthly_means = df_number.groupby([('Rok', ''), ('Miesiąc', '')]).mean()
     return monthly_means
 
@@ -44,6 +46,8 @@ def get_monthly_means_for_cities(df: pd.DataFrame) -> pd.DataFrame:
     data_cols = [col for col in df.columns if col[0] not in ['Data', 'Rok', 'Miesiąc']]
     meta_cols = [('Data', ''), ('Rok', ''), ('Miesiąc', '')]
 
+    for col in data_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
     # Grupowanie po miejscowości (poziom 0 indeksu) i uśrednienie
     df_means = df[data_cols].T.groupby(level=0).mean().T
     df_means
@@ -66,7 +70,7 @@ def get_monthly_means_for_cities(df: pd.DataFrame) -> pd.DataFrame:
 def get_who_norm_exceeding_days(df: pd.DataFrame) -> pd.DataFrame:
     """Zwraca liczbę dni w miesiącu, w których średnie dzienne PM2.5 przekroczyły normę WHO (15 µg/m³)."""
     # Ustawiamy indeks czasowy i resamplujemy dane do częstotliwości dziennej ('D')
-    df[('Data', '')] = pd.to_datetime(df[('Data', '')])
+    df[('Data', '')] = pd.to_datetime(df[('Data', '')], format="mixed")
     # Ustawiamy datę jako indeks i usuwamy zbędne kolumny tekstowe (Rok, Miesiąc)
     df_daily = df.set_index(('Data', '')).drop(columns=[('Rok', ''), ('Miesiąc', '')])
     daily_means = df_daily.resample('D').mean()
