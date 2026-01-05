@@ -101,7 +101,7 @@ def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
 
     # Przesuwamy pomiary o północy o -1
     midnight_dates = df['Data'].dt.time == pd.Timestamp('00:00:00').time()
-    df.loc[midnight_dates, 'Data'] = df.loc[midnight_dates, 'Data'] - pd.Timedelta(days=1)
+    df.loc[midnight_dates, 'Data'] = df.loc[midnight_dates, 'Data'] - pd.Timedelta(seconds=1)
 
     return df
 
