@@ -133,20 +133,14 @@ def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code:
 
     return df
 
-def get_common_stations(dfs: list) -> list:
-    """Zwraca zbiór kodów stacji wspólnych dla wszystkich podanych DataFrame'ów."""
-    col_sets = [set(df.columns.drop([('Data', ''), ('Rok', ''), ('Miesiąc', '')])) for df in dfs]
-    common_stations = list(set.intersection(*col_sets))
-    return common_stations
 
-def join_data_on_common_stations(dfs: list, common_stations: list) -> list:
+
+def join_data_on_common_stations(dfs: list) -> tuple(pd.DataFrame, list):
     """Zwraca listę DataFrame'ów z danymi tylko dla wspólnych stacji."""
-    filtered_dfs = []
-    cols_to_keep = [('Data', '') , ('Rok', ''), ('Miesiąc', '')] + common_stations
-    for df in dfs:
-        filtered_df = df[cols_to_keep]
-        filtered_dfs.append(filtered_df)
-    return pd.concat(filtered_dfs, ignore_index=True)
+    result = pd.concat(dfs, join='inner', ignore_index=True)
+    cols_to_keep = ('Data', '') , ('Rok', ''), ('Miesiąc', '')
+    common_stations = [col for col in result.columns if col not in cols_to_keep]
+    return result, common_stations
 
 def read_data_from_csv(file_path: str) -> pd.DataFrame:
     """Wczytuje przetworzone dane z pliku CSV."""
