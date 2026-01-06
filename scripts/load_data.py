@@ -5,13 +5,13 @@ import io
 from typing import Tuple
 
 # id archiwum dla poszczególnych lat
-gios_archive_url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/"
 gios_url_ids = {2015: '236', 2018: '603', 2021: '486', 2024: '582'}
 gios_pm25_file = {2015: '2015_PM25_1g.xlsx', 2018: '2018_PM25_1g.xlsx', 2021: '2021_PM25_1g.xlsx', 2024: '2024_PM25_1g.xlsx'}
 
 def download_gios_archive(year, gios_id, filename):
     """Pobiera podane archiwum."""
     # Pobranie archiwum ZIP do pamięci
+    gios_archive_url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/"
     url = f"{gios_archive_url}{gios_id}"
     response = requests.get(url)
     response.raise_for_status()  # jeśli błąd HTTP, zatrzymaj
@@ -97,11 +97,8 @@ def add_multiindex(df, code_dict: dict) -> pd.DataFrame:
 def change_midnight_measurements(df: pd.DataFrame, year: int) -> pd.DataFrame:
     """Przesuwa pomiary o północy o jeden dzień wstecz."""
     df = df.copy()
-    if year == 2015:
-        # Nietypowy format daty w 2015
-        df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
-    else:
-        df['Data'] = pd.to_datetime(df['Data'], errors='coerce')
+    df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
+    df['Data'] = df['Data'].dt.floor('h')  # usuwamy sekundy
 
     # Przesuwamy pomiary o północy o -1
     midnight_dates = df['Data'].dt.time == pd.Timestamp('00:00:00').time()
@@ -123,7 +120,17 @@ def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code:
     df = rename_columns(df, old_to_new_code)
 
     # Usuwamy niepotrzebne wiersze nagłówkowe
-    df = df[~df['Data'].isin(('Nr', 'Wskaźnik', 'Czas uśredniania', 'Jednostka', 'Kod stanowiska'))]
+    df = df[~df['Data'].isin(('Nr', 'Wskaźnik', 'Czas uśredniania', 'Jednostka', 'Kod stanowiska', 'Czas pomiaru'))]
+
+    # Dla 2018 roku (inny format) konwertujemy dane na numeryczne
+    if year == 2018:
+        value_cols = df.columns.difference(['Data'])
+        df[value_cols] = (
+            df[value_cols]
+            .astype(str)
+            .apply(lambda col: col.str.replace(",", ".", regex=False))
+            .astype(float)
+        )
 
     # Przesuwamy pomiary z północy
     df = change_midnight_measurements(df, year)
@@ -147,5 +154,6 @@ def read_data_from_csv(file_path: str) -> pd.DataFrame:
         [(a, "" if "Unnamed" in str(b) else b) for a, b in df.columns],
         names=["Miejscowość", "Kod stacji"]
     )
+    df['Data'] = pd.to_datetime(df['Data'])
     return df
 

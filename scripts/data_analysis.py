@@ -2,11 +2,18 @@ import pandas as pd
 
 def get_monthly_means_for_stations(df: pd.DataFrame) -> pd.DataFrame:
     """Oblicza miesięczne średnie wartości PM2.5 dla każdej stacji."""
-    # Usuwamy datę, zostawiamy liczby
-    df_number = df.drop(columns=[('Data', '')])
-    for col in df_number:
-        df_number[col] = pd.to_numeric(df_number[col], errors='coerce')
-    monthly_means = df_number.groupby([('Rok', ''), ('Miesiąc', '')]).mean()
+    # Konwersja tylko kolumn stacji
+    df_num = df.drop(columns=[('Data', '')]).apply(
+        pd.to_numeric, errors="coerce"
+    )
+    monthly_means = (
+        df_num
+        .groupby([
+            df[('Data', '')].dt.year.rename("Rok"),
+            df[('Data', '')].dt.month.rename("Miesiąc"),
+        ])
+        .mean()
+    )
     return monthly_means
 
 def get_chosen_monthly_means(df: pd.DataFrame, chosen_years: list, chosen_cities: list) -> pd.DataFrame:
