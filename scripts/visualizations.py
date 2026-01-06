@@ -17,7 +17,7 @@ def plot_trends_for_chosen_cities(df: pd.DataFrame, chosen_years: list, chosen_c
         data=df,
         x='Miesiąc',
         y='PM2.5',
-        hue='Miasto',
+        hue='Miejscowość',
         style='Rok',
         markers=True,
         dashes=True,
@@ -31,7 +31,7 @@ def plot_trends_for_chosen_cities(df: pd.DataFrame, chosen_years: list, chosen_c
     plt.xticks(range(1, 13))  
     plt.axhline(y=15, color='gray', linestyle='--', alpha=0.7, label='Norma dobowa WHO (15 µg/m³)')
 
-    plt.legend(title='Miasto / Rok')
+    plt.legend(title='Miejscowość / Rok')
     plt.tight_layout()
     plt.show()
 
