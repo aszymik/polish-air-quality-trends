@@ -4,9 +4,6 @@ import zipfile
 import io
 from typing import Tuple
 
-# id archiwum dla poszczególnych lat
-gios_url_ids = {2015: '236', 2018: '603', 2021: '486', 2024: '582'}
-gios_pm25_file = {2015: '2015_PM25_1g.xlsx', 2018: '2018_PM25_1g.xlsx', 2021: '2021_PM25_1g.xlsx', 2024: '2024_PM25_1g.xlsx'}
 
 def download_gios_archive(year, gios_id, filename):
     """Pobiera podane archiwum."""
@@ -106,9 +103,9 @@ def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code: dict, header_index: int=0) -> pd.DataFrame:
+def download_and_preprocess_data(year: int, gios_id: str, gios_filename: str, code_to_city: dict, old_to_new_code: dict, header_index: int=0) -> pd.DataFrame:
     """Pobiera i przygotowuje dane z archiwum GIOŚ dla podanego roku."""
-    df = download_gios_archive(year, gios_url_ids[year], gios_pm25_file[year])
+    df = download_gios_archive(year, gios_id, gios_filename)
 
     # Zmieniamy nazwy kolumn na kody stacji
     col_names = df.iloc[header_index]
