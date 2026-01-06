@@ -94,7 +94,7 @@ def add_multiindex(df, code_dict: dict) -> pd.DataFrame:
     data_values.insert(0, 'Data', data_col)
     return data_values
 
-def change_midnight_measurements(df: pd.DataFrame, year: int) -> pd.DataFrame:
+def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
     """Przesuwa pomiary o północy o jeden dzień wstecz."""
     df = df.copy()
     df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
@@ -133,14 +133,10 @@ def download_and_preprocess_data(year: int, code_to_city: dict, old_to_new_code:
         )
 
     # Przesuwamy pomiary z północy
-    df = change_midnight_measurements(df, year)
+    df = change_midnight_measurements(df)
 
     # Dodajemy multiindex: (miejscowość, kod stacji)
     df = add_multiindex(df, code_to_city)
-
-    # Dodajemy rok i miesiąc
-    df['Rok'] = year
-    df['Miesiąc'] = df['Data'].dt.month
     return df
 
 def join_data_on_common_stations(dfs: list[pd.DataFrame]) -> tuple[pd.DataFrame, list]:
