@@ -49,8 +49,7 @@ def get_metadata():
 def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict]:
     """Tworzy słowniki mapujące stare kody na nowe i kody na miasta."""
     old_to_new_code = {}  # słownik mapujący stare kody na nowe
-    
-    old_to_new_code = {}
+
     for _, row in metadata.dropna(subset=['Stary kod stacji']).iterrows():
         old_codes = str(row['Stary kod stacji']).split(',')  # rozdzielamy stare kody po przecinku
         for code in old_codes:
