@@ -55,6 +55,7 @@ def df_without_multiindex():
         'stacja3': [5, 15, 25, None],
     }
     return pd.DataFrame(data)
+
 @pytest.fixture
 def code_to_city_dict():
     return {

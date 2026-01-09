@@ -16,7 +16,6 @@ from scripts.load_data import (
 
 def test_get_monthly_means_for_stations(sample_df):
     result = get_monthly_means_for_stations(sample_df)
-
     assert len(result) == 2
 
     jan_mean = 10.0  # styczeń 2022
@@ -29,6 +28,7 @@ def test_get_monthly_means_for_stations_none(sample_df):
     sample_df[('Warszawa','stacja1')] = [None, None, None, None]
     sample_df[('Kraków','stacja1')] = [None, None, None, None]
     result = get_monthly_means_for_stations(sample_df)
+
     assert pd.isna(result.loc[(2022, 1), ('Warszawa','stacja1')])
     assert pd.isna(result.loc[(2022, 1), ('Kraków','stacja1')])
 
@@ -67,9 +67,7 @@ def test_get_max_and_min_k_stations():
         data,
         index=['A', 'B', 'C', 'D']
     )
-
     result = get_max_and_min_k_stations(df, chosen_year=2022, k=1)
-
     assert list(result.index) == ['C', 'D']
 
 def test_rename_columns():
@@ -79,14 +77,11 @@ def test_rename_columns():
         'old2': [5, 6],
         'new3': [7, 8]
     })
-
     old_to_new_code = {
         'old1': 'A',
         'old2': 'B'
     }
-
     result = rename_columns(df, old_to_new_code)
-
     assert list(result.columns) == ['Data', 'A', 'B', 'new3']
 
 def test_change_midnight_measurements(midnight):
@@ -130,14 +125,11 @@ def test_get_code_mappings_whitespaces():
         'Stary kod stacji': [' old1, old2 '],
         'Miejscowość': [' Warszawa ']
     })
-    old_to_new, code_to_city = get_code_mappings(metadata)
+    old_to_new, _ = get_code_mappings(metadata)
     assert 'old1' in old_to_new
     assert 'old2' in old_to_new
     assert old_to_new['old1'] == 'stacja1'
     assert ' old1 ' not in old_to_new
-
-    
-    
 
 def test_get_code_mappings_no_old_codes(sample_metadata):
 
