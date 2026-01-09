@@ -48,7 +48,7 @@ def get_monthly_means_for_cities(df: pd.DataFrame) -> pd.DataFrame:
     df_num = df[data_cols].apply(pd.to_numeric, errors='coerce')
 
     # Grupowanie po miejscowości (poziom 0 indeksu) i uśrednienie
-    df_city = df_num.groupby(level=0, axis=1).mean()
+    df_city = df_num.T.groupby(level=0).mean().T
 
     # Uśrednienie po miesiącu w każdym roku
     df_means = (

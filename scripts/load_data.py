@@ -92,9 +92,9 @@ def add_multiindex(df, code_dict: dict) -> pd.DataFrame:
 
 def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
     """Przesuwa pomiary o północy o jeden dzień wstecz."""
-    df = df.copy()
-    df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
-    df['Data'] = df['Data'].dt.floor('h')  # usuwamy sekundy
+    # df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
+    df['Data'] = pd.to_datetime(df['Data'], errors='coerce')
+    df['Data'] = df['Data'].dt.floor('min')  # usuwamy mikrosekundy
 
     # Przesuwamy pomiary o północy o -1
     midnight_dates = df['Data'].dt.time == pd.Timestamp('00:00:00').time()

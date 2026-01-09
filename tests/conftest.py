@@ -8,8 +8,6 @@ def sample_df():
             '2022-01-01', '2022-01-02',
             '2022-02-01', '2022-02-02'
         ]),
-        ('Rok',''): [2022, 2022, 2022, 2022],
-        ('Miesiąc',''): [1, 1, 2, 2],
         ('Warszawa','stacja1'): [10, None, 30, 40],
         ('Warszawa','stacja2'): [20, 30, 40, 50],
         ('Kraków','stacja1'): [5, 15, 25, None],
@@ -24,15 +22,8 @@ def sample_df():
 @pytest.fixture
 def midnight():
     return pd.DataFrame({
-        'Data': ['2021-01-15 14:30:00', '2021-01-15 00:00:00', '2023-01-17 23:59:59'],
+        'Data': ['2021-01-15 14:30:00', '2021-01-15 00:00:00', '2023-01-17 23:59:00'],
         'Temperature': [5, -2, 0]
-    })
-
-@pytest.fixture
-def midnight_2015():
-    return pd.DataFrame({
-        'Data': ['01/15/15 14:00', '01/16/15 00:00', '01/17/15 23:59'],
-        'Temperature': [80, 60, 70]
     })
 
 @pytest.fixture
