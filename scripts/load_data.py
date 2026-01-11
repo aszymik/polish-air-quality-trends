@@ -6,7 +6,13 @@ from typing import Tuple
 
 
 def download_gios_archive(year, gios_id, filename):
-    """Pobiera podane archiwum."""
+    """Pobiera podane archiwum.
+    Arguments:
+        year: rok danych (używane tylko do komunikatów o błędach).
+        gios_id: ID archiwum w serwisie GIOŚ.
+        filename: nazwa pliku wewnątrz archiwum ZIP.
+    Returns:
+        DataFrame z danymi PM2.5."""
     # Pobranie archiwum ZIP do pamięci
     gios_archive_url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/"
     url = f"{gios_archive_url}{gios_id}"
@@ -28,7 +34,9 @@ def download_gios_archive(year, gios_id, filename):
     return df
 
 def download_metadata():
-    """Pobiera metadane o stacjach."""
+    """Pobiera metadane o stacjach.
+    Returns:
+        DataFrame z metadanymi o stacjach."""
     url = "https://powietrze.gios.gov.pl/pjp/archives/downloadFile/622"
     response = requests.get(url)
     response.raise_for_status()
@@ -36,7 +44,9 @@ def download_metadata():
     return df
 
 def get_metadata():
-    """Pobiera i preprocesuje metadane o stacjach."""
+    """Pobiera i preprocesuje metadane o stacjach.
+    Returns:
+        DataFrame z metadanymi o stacjach."""
     metadata = download_metadata()
     metadata['Stary kod stacji'] = metadata['Stary Kod stacji \n(o ile inny od aktualnego)']
     metadata = metadata[['Kod stacji', 'Stary kod stacji', 'Miejscowość']]
@@ -44,7 +54,13 @@ def get_metadata():
     return metadata
 
 def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict]:
-    """Tworzy słowniki mapujące stare kody na nowe i kody na miasta."""
+    """Tworzy słowniki mapujące stare kody na nowe i kody na miasta.
+    Arguments:
+        metadata: DataFrame z metadanymi o stacjach.
+    Returns:
+        Tuple zawierający dwa słowniki:
+        - old_to_new_code: mapowanie starych kodów na nowe kody stacji.
+        - code_to_city: mapowanie kodów stacji na nazwy miast."""
     old_to_new_code = {}  # słownik mapujący stare kody na nowe
 
     for _, row in metadata.dropna(subset=['Stary kod stacji']).iterrows():
@@ -61,7 +77,12 @@ def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict]:
     return old_to_new_code, code_to_city
 
 def rename_columns(df: pd.DataFrame, old_to_new_code: dict) -> pd.DataFrame:
-    """Zmienia nazwy kolumn na nowe kody stacji."""
+    """Zmienia nazwy kolumn na nowe kody stacji.
+    Arguments:
+        df: DataFrame z danymi PM2.5.
+        old_to_new_code: słownik mapujący stare kody na nowe kody stacji.
+    Returns:
+        DataFrame z zaktualizowanymi nazwami kolumn."""
     new_col_names = []
     for col in df.columns:
         if col in old_to_new_code:
@@ -72,7 +93,12 @@ def rename_columns(df: pd.DataFrame, old_to_new_code: dict) -> pd.DataFrame:
     return df
 
 def add_multiindex(df, code_dict: dict) -> pd.DataFrame:
-    """Dodaje miasto do multiindeksu."""
+    """Dodaje miasto do multiindeksu.
+    Arguments:
+        df: DataFrame z danymi PM2.5, gdzie kolumny to kody stacji.
+        code_dict: słownik mapujący kody stacji na nazwy miast.
+    Returns:
+        DataFrame z MultiIndexem (miejscowość, kod stacji)."""
     # Pomijamy kolumnę 'Data'
     data_col = df['Data']
     data_values = df.drop(columns=['Data'])
@@ -91,7 +117,11 @@ def add_multiindex(df, code_dict: dict) -> pd.DataFrame:
     return data_values
 
 def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
-    """Przesuwa pomiary o północy o jeden dzień wstecz."""
+    """Przesuwa pomiary o północy o jeden dzień wstecz.
+    Arguments:
+        df: DataFrame z danymi PM2.5, gdzie jedna z kolumn to 'Data'.
+    Returns:
+        DataFrame z przesuniętymi pomiarami o północy."""
     # df['Data'] = pd.to_datetime(df['Data'], format='%m/%d/%y %H:%M', errors='coerce')
     df['Data'] = pd.to_datetime(df['Data'], errors='coerce')
     df['Data'] = df['Data'].dt.floor('min')  # usuwamy mikrosekundy
@@ -103,7 +133,16 @@ def change_midnight_measurements(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 def download_and_preprocess_data(year: int, gios_id: str, gios_filename: str, code_to_city: dict, old_to_new_code: dict, header_index: int=0) -> pd.DataFrame:
-    """Pobiera i przygotowuje dane z archiwum GIOŚ dla podanego roku."""
+    """Pobiera i przygotowuje dane z archiwum GIOŚ dla podanego roku.
+    Arguments:
+        year: rok danych.
+        gios_id: ID archiwum w serwisie GIOŚ.
+        gios_filename: nazwa pliku wewnątrz archiwum ZIP.
+        code_to_city: słownik mapujący kody stacji na nazwy miast.
+        old_to_new_code: słownik mapujący stare kody na nowe kody stacji.
+        header_index: indeks wiersza nagłówka w pliku Excel.
+    Returns:
+        DataFrame z przetworzonymi danymi PM2.5."""
     df = download_gios_archive(year, gios_id, gios_filename)
 
     # Zmieniamy nazwy kolumn na kody stacji
@@ -136,11 +175,20 @@ def download_and_preprocess_data(year: int, gios_id: str, gios_filename: str, co
     return df
 
 def join_data_on_common_stations(dfs: list[pd.DataFrame]) -> tuple[pd.DataFrame, list]:
-    """Łączy DataFrame'y, zachowując tylko wspólne stacje."""
+    """Łączy DataFrame'y, zachowując tylko wspólne stacje.
+    Arguments:
+        dfs: lista DataFrame'ów z danymi PM2.5.
+    Returns:
+        Połączony DataFrame z danymi PM2.5 oraz lista wspólnych stacji."""
+    # Znajdź wspólne stacje
     return pd.concat(dfs, ignore_index=True, join="inner")
 
 def read_data_from_csv(file_path: str) -> pd.DataFrame:
-    """Wczytuje przetworzone dane z pliku CSV."""
+    """Wczytuje przetworzone dane z pliku CSV.
+    Arguments:
+        file_path: ścieżka do pliku CSV.
+    Returns:
+        DataFrame z danymi PM2.5."""
     df = pd.read_csv(file_path, header=[0,1])
     df.columns = pd.MultiIndex.from_tuples(
         [(a, "" if "Unnamed" in str(b) else b) for a, b in df.columns],
