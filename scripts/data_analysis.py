@@ -11,8 +11,9 @@ def get_monthly_means_for_stations(df: pd.DataFrame) -> pd.DataFrame:
     df_num = df.drop(columns=[('Data', '')]).apply(
         pd.to_numeric, errors="coerce"
     )
+    february_mask = df[('Data', '')].dt.month != 2
     monthly_means = (
-        df_num
+        df_num[february_mask]
         .groupby([
             df[('Data', '')].dt.year.rename("Rok"),
             df[('Data', '')].dt.month.rename("Miesiąc"),
@@ -91,7 +92,7 @@ def get_who_norm_exceeding_days(df: pd.DataFrame) -> pd.DataFrame:
     df_daily = df.set_index(('Data', ''))
     daily_means = df_daily.resample('D').mean()
 
-    exceeded_mask = daily_means > 15
+    exceeded_mask = daily_means > 14.9
     yearly_counts = exceeded_mask.groupby(daily_means.index.year).sum()
 
     return yearly_counts.T  # stacje w wierszach, lata w kolumnach
