@@ -11,9 +11,9 @@ def get_monthly_means_for_stations(df: pd.DataFrame) -> pd.DataFrame:
     df_num = df.drop(columns=[('Data', '')]).apply(
         pd.to_numeric, errors="coerce"
     )
-    february_mask = df[('Data', '')].dt.month != 2
+    # february_mask = df[('Data', '')].dt.month != 2
     monthly_means = (
-        df_num[february_mask]
+        df_num
         .groupby([
             df[('Data', '')].dt.year.rename("Rok"),
             df[('Data', '')].dt.month.rename("Miesiąc"),
@@ -109,6 +109,7 @@ def get_max_and_min_k_stations(yearly_counts: pd.DataFrame, chosen_year: int, k:
     """
     if chosen_year not in yearly_counts.columns:
         return pd.DataFrame()
+    yearly_counts = yearly_counts.iloc[1:]
         
     sorted_results = yearly_counts.sort_values(by=chosen_year)
     return pd.concat([sorted_results.head(k), sorted_results.tail(k)])
