@@ -51,27 +51,17 @@ exceeding_days = get_who_norm_exceeding_days(df)
     polish-air-qaulity-trends/
 
         scripts/
-
             data_analysis.py
-
             load_data.py
-
             visualizations.py
-
-
-
+            
         tests/
-
             conftest.py
-
             test_data_analysis.py
-
-
+            test_load_data.py
 
         main.ipynb
-
         README.md
-
         requirements.txt
 
 ## Uruchamianie testów
