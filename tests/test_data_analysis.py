@@ -44,6 +44,8 @@ def test_get_monthly_means_for_cities(sample_df):
     assert len(result) == 2
     assert 'Rok' in result.columns
     assert 'Miesiąc' in result.columns
+    assert result.loc[(result['Rok'] == 2022) & (result['Miesiąc'] == 1), 'Warszawa'].iloc[0] == ((10+20)/2 + 30) / 2
+    assert result.loc[(result['Rok'] == 2022) & (result['Miesiąc'] == 2), 'Warszawa'].iloc[0] == ((30+40)/2 + (50+40)/2) / 2
 
 def test_get_who_norm_exceeding_days(sample_df):
     result = get_who_norm_exceeding_days(sample_df)
