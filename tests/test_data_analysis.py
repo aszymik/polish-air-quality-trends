@@ -5,6 +5,7 @@ from scripts.data_analysis import (
     get_monthly_means_for_cities,
     get_who_norm_exceeding_days,
     get_max_and_min_k_stations,
+    get_voivodeship_exceeding_days,
 )
 
 def test_get_monthly_means_for_stations(sample_df):
@@ -64,3 +65,25 @@ def test_get_max_and_min_k_stations():
     )
     result = get_max_and_min_k_stations(df, chosen_year=2022, k=1)
     assert list(result.index) == ['C', 'D']
+
+def test_get_voivodeship_exceeding_days():
+    df = pd.DataFrame({
+        ('Data',''): pd.to_datetime(['2022-01-01', '2022-01-02', '2022-01-03']),
+        ('Warszawa','stacja1'): [10, 20, 5],
+        ('Warszawa','stacja2'): [None, 5, 30],
+        ('Kraków','stacja3'): [16, 14, 10],
+    })
+    df.columns = pd.MultiIndex.from_tuples(
+        df.columns,
+        names=["Miejscowość", "Kod stacji"]
+    )
+    code_to_voivodeship = {
+        'stacja1': 'Mazowieckie',
+        'stacja2': 'Mazowieckie',
+        'stacja3': 'Małopolskie',
+    }
+    result = get_voivodeship_exceeding_days(df, code_to_voivodeship, threshold=15)
+
+    assert 2022 in result.columns
+    assert result.loc['Mazowieckie', 2022] == 2
+    assert result.loc['Małopolskie', 2022] == 1

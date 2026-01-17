@@ -32,6 +32,7 @@ def sample_metadata():
         'Kod stacji': ['stacja1', 'stacja2', 'stacja3'],
         'Stary kod stacji': ['old1, old2', pd.NA, 'old3'],
         'Miejscowość': ['Warszawa', 'Kraków', 'Gdańsk'],
+        'Województwo': ['Mazowieckie', 'Małopolskie', 'Pomorskie'],
     })
 
 @pytest.fixture
@@ -54,3 +55,9 @@ def code_to_city_dict():
         'stacja2': 'Kraków',
     }
 
+@pytest.fixture
+def code_to_voivodeship_dict():
+    return {
+        'stacja1': 'Mazowieckie',
+        'stacja2': 'Małopolskie',
+    }

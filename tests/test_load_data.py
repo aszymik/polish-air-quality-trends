@@ -35,7 +35,7 @@ def test_change_midnight_measurements_none(midnight):
     assert result.loc[1, 'Data'] == pd.Timestamp('2023-01-15 14:30:00')
 
 def test_get_code_mappings(sample_metadata):
-    old_to_new, code_to_city = get_code_mappings(sample_metadata)
+    old_to_new, code_to_city, code_to_voivodeship = get_code_mappings(sample_metadata)
 
     assert old_to_new == {
         'old1': 'stacja1',
@@ -47,24 +47,31 @@ def test_get_code_mappings(sample_metadata):
         'stacja2': 'Kraków',
         'stacja3': 'Gdańsk'
     }
+    assert code_to_voivodeship == {
+        'stacja1': 'Mazowieckie',
+        'stacja2': 'Małopolskie',
+        'stacja3': 'Pomorskie'
+    }
 
 def test_get_code_mappings_whitespaces():
     metadata = pd.DataFrame({
         'Kod stacji': ['stacja1'],
         'Stary kod stacji': [' old1, old2 '],
-        'Miejscowość': [' Warszawa ']
+        'Miejscowość': [' Warszawa '],
+        'Województwo': [' Mazowieckie ']
     })
-    old_to_new, _ = get_code_mappings(metadata)
+    old_to_new, _, code_to_voivodeship = get_code_mappings(metadata)
     assert 'old1' in old_to_new
     assert 'old2' in old_to_new
     assert old_to_new['old1'] == 'stacja1'
     assert ' old1 ' not in old_to_new
+    assert code_to_voivodeship['stacja1'].strip() == 'Mazowieckie'
 
 def test_get_code_mappings_no_old_codes(sample_metadata):
 
     sample_metadata['Stary kod stacji'] = [pd.NA, pd.NA, pd.NA]
 
-    old_to_new, code_to_city = get_code_mappings(sample_metadata)
+    old_to_new, code_to_city, _ = get_code_mappings(sample_metadata)
     assert len(old_to_new) == 0
     assert code_to_city['stacja1'] == 'Warszawa'
     assert code_to_city['stacja2'] == 'Kraków'
