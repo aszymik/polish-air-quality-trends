@@ -111,3 +111,41 @@ def get_max_and_min_k_stations(yearly_counts: pd.DataFrame, chosen_year: int, k:
         
     sorted_results = yearly_counts.sort_values(by=chosen_year)
     return pd.concat([sorted_results.head(k), sorted_results.tail(k)])
+
+def get_voivodeship_exceeding_days(df: pd.DataFrame, code_to_voivodeship: dict, threshold: float=15) -> pd.DataFrame:
+    """Zwraca liczbę dni w roku, w których średnie dzienne PM2.5 przekroczyły próg
+    dla dowolnej stacji w danym województwie.
+    Arguments:
+        df: DataFrame z danymi PM2.5, gdzie kolumny to (miejscowość, kod stacji).
+        code_to_voivodeship: słownik mapujący kody stacji na województwa.
+        threshold: próg stężenia PM2.5 (µg/m³).
+    Returns:
+        DataFrame z liczbą dni przekroczeń dla województw (wiersze) i lat (kolumny).
+    """
+    df = df.copy()
+    df[('Data', '')] = pd.to_datetime(df[('Data', '')], format="mixed")
+
+    station_cols = [col for col in df.columns if col != ('Data', '')]
+    df_daily = df.set_index(('Data', ''))
+    df_num = df_daily[station_cols].apply(pd.to_numeric, errors='coerce')
+    daily_means = df_num.resample('D').mean()
+
+    exceeded = daily_means > threshold
+
+    if isinstance(exceeded.columns, pd.MultiIndex):
+        station_codes = [col[1] for col in exceeded.columns]
+    else:
+        station_codes = list(exceeded.columns)
+
+    voivodeships = [
+        code_to_voivodeship.get(code, 'Nieznane')
+        for code in station_codes
+    ]
+    exceeded.columns = pd.MultiIndex.from_arrays(
+        [voivodeships, station_codes],
+        names=['Województwo', 'Kod stacji']
+    )
+
+    exceeded_voiv = exceeded.T.groupby(level=0).any().T
+    yearly_counts = exceeded_voiv.groupby(exceeded_voiv.index.year).sum()
+    return yearly_counts.T
