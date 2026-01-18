@@ -49,18 +49,21 @@ def get_metadata():
         DataFrame z metadanymi o stacjach."""
     metadata = download_metadata()
     metadata['Stary kod stacji'] = metadata['Stary Kod stacji \n(o ile inny od aktualnego)']
-    metadata = metadata[['Kod stacji', 'Stary kod stacji', 'Miejscowość']]
+    metadata = metadata[['Kod stacji', 'Stary kod stacji', 'Miejscowość', 'Województwo']]
     metadata['Stary kod stacji'] = metadata['Stary kod stacji'].replace({' ': pd.NA})  # zamieniamy spacje na nan
     return metadata
 
-def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict]:
+def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict, dict]:
     """Tworzy słowniki mapujące stare kody na nowe i kody na miasta.
     Arguments:
         metadata: DataFrame z metadanymi o stacjach.
     Returns:
         Tuple zawierający dwa słowniki:
         - old_to_new_code: mapowanie starych kodów na nowe kody stacji.
-        - code_to_city: mapowanie kodów stacji na nazwy miast."""
+        - code_to_city: mapowanie kodów stacji na nazwy miast.
+        - code_to_voivodeship: mapowanie kodów stacji na nazwy województw."""
+    metadata = metadata.copy()
+
     old_to_new_code = {}  # słownik mapujący stare kody na nowe
 
     for _, row in metadata.dropna(subset=['Stary kod stacji']).iterrows():
@@ -74,7 +77,11 @@ def get_code_mappings(metadata: pd.DataFrame) -> Tuple[dict, dict]:
         metadata.set_index('Kod stacji')['Miejscowość']
         .to_dict()
     )
-    return old_to_new_code, code_to_city
+    code_to_voivodeship = (
+        metadata.set_index('Kod stacji')['Województwo']
+        .to_dict()
+    )
+    return old_to_new_code, code_to_city, code_to_voivodeship
 
 def rename_columns(df: pd.DataFrame, old_to_new_code: dict) -> pd.DataFrame:
     """Zmienia nazwy kolumn na nowe kody stacji.

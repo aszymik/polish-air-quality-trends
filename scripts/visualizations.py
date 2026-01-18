@@ -1,6 +1,9 @@
 from matplotlib import pyplot as plt
+from matplotlib import colors
+from matplotlib import patches
 import seaborn as sns
 import pandas as pd
+import geopandas as gpd
 
 def plot_trends_for_chosen_cities(df: pd.DataFrame, chosen_years: list, chosen_cities: list):
     """Rysuje wykres trendów średnich miesięcznych PM2.5 dla wybranych dwóch miast."""
@@ -82,6 +85,78 @@ def plot_who_exceeding_days(selected_stations: pd.DataFrame):
 
     plt.axhline(y=365, color='red', linestyle=':', label='Pełny rok')
     plt.legend(title='Rok')
+
+    plt.tight_layout()
+    plt.show()
+
+def plot_voivodeship_exceeding_days_map(
+    voivodeship_counts: pd.DataFrame,
+    geojson_path: str,
+    years: list,
+    cmap: str = 'OrRd'
+):
+    """Rysuje mapy województw z liczbą dni przekroczeń normy PM2.5 dla wybranych lat."""
+    gdf = gpd.read_file(geojson_path)
+    gdf['voiv_norm'] = gdf['nazwa'].astype(str).str.strip().str.lower()
+
+    counts = voivodeship_counts.copy()
+    counts.index = counts.index.map(lambda x: str(x).strip().lower())
+    counts.index.name = 'voiv_norm'
+    counts = counts.reset_index()
+
+    vmin = counts[years].min().min()
+    vmax = counts[years].max().max()
+
+    fig, axes = plt.subplots(len(years), 1, figsize=(7, 5 * len(years)))
+    if len(years) == 1:
+        axes = [axes]
+
+    for ax, year in zip(axes, years):
+        data = gdf.merge(
+            counts[['voiv_norm', year]],
+            on='voiv_norm',
+            how='left'
+        )
+
+        missing_color = 'dimgray'
+        data.plot(
+            column=year,
+            ax=ax,
+            cmap=cmap,
+            vmin=vmin,
+            vmax=vmax,
+            linewidth=0.4,
+            edgecolor='gray',
+            missing_kwds={
+                'color': missing_color,
+                'edgecolor': 'gray',
+                'label': 'Brak danych'
+            }
+        )
+
+        data['rep_point'] = data.geometry.representative_point()
+        for _, row in data.iterrows():
+            value = row[year]
+            if pd.notna(value):
+                ax.annotate(
+                    int(value),
+                    xy=(row['rep_point'].x, row['rep_point'].y),
+                    ha='center',
+                    va='center',
+                    fontsize=12
+                )
+
+        ax.set_title(f'Województwa – liczba dni > próg ({year})')
+        ax.axis('off')
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=colors.Normalize(vmin=vmin, vmax=vmax))
+        sm._A = []
+        cb = fig.colorbar(sm, ax=ax, fraction=0.03, pad=0.02, label='Liczba dni')
+        cb.ax.legend(
+            handles=[patches.Patch(facecolor=missing_color, edgecolor='gray', label='Brak danych')],
+            loc='upper center',
+            bbox_to_anchor=(0.5, -0.08),
+            frameon=False
+        )
 
     plt.tight_layout()
     plt.show()
