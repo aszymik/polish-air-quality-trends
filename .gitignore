@@ -1,6 +1,5 @@
 # Custom
-data/
-quicktest.py
+data/pm25_gios_2015_2018_2021_2024.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
