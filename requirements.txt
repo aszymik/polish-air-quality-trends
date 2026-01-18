@@ -20,6 +20,7 @@ kiwisolver==1.4.9
 matplotlib==3.10.8
 matplotlib-inline==0.2.1
 nest-asyncio==1.6.0
+notebook==7.5.2
 numpy==2.4.0
 openpyxl==3.1.5
 packaging==25.0
@@ -35,6 +36,7 @@ pure_eval==0.2.3
 Pygments==2.19.2
 pyparsing==3.3.1
 python-dateutil==2.9.0.post0
+pytest==9.0.2
 pytz==2025.2
 pyzmq==27.1.0
 requests==2.32.5
