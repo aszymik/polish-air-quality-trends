@@ -7,6 +7,8 @@ Skupia się na pomiarach stężeń drobnego pyłu PM2.5, ze względu na wyjątko
 
 Źródło danych: https://powietrze.gios.gov.pl/
 
+Źródło mapy używanej do obsługi granic województw: https://github.com/ppatrzyk/polska-geojson
+
 ## Wymagania
 Python 3.11
 
