@@ -52,6 +52,9 @@ exceeding_days = get_who_norm_exceeding_days(df)
 ## Struktura projektu
     polish-air-qaulity-trends/
 
+        data/
+            wojewodztwa-min.geojson
+
         scripts/
             data_analysis.py
             load_data.py
